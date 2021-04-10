@@ -28,16 +28,12 @@ router.patch('/analyte/:id', async (req, res) => {
         const analyte = await Analyte.findById(req.params.id)
 
         if(!analyte) {
-            return res.send(404).send('No analyte found for id provided!')
+            return res.status(404).send('Analyte could not be found by id: '+ req.params.id)
         }
 
         analyte.measurements = analyte.measurements.concat(req.body['measurements'])
 
         await analyte.save()
-
-        if (!analyte) {
-            return res.status(404).send('No analyte found for id provided!')
-        }
         res.status(200).send(analyte)
     } catch (e) {
         res.status(500).send(e.message)
@@ -50,7 +46,7 @@ router.get('/analyte/:id', async (req, res) => {
         const analyte = await Analyte.findById(req.params.id)
 
         if (!analyte) {
-            res.status(404).send('Analyte cound not be found by id: '+ req.params.id)
+            res.status(404).send('Analyte could not be found by id: '+ req.params.id)
         } else {
             res.status(200).send(analyte)
         }
@@ -64,7 +60,7 @@ router.delete('/analyte/:id', async (req,res) => {
     try {
         const deletedAnalyte = await Analyte.findByIdAndDelete(req.params.id)
         if(!deletedAnalyte) {
-            res.status(404).send('No task found by id provided!')
+            res.status(404).send('Analyte could not be found by id: '+ req.params.id)
         } else {
             res.status(200).send(deletedAnalyte)
         }
