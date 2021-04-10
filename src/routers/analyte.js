@@ -53,4 +53,18 @@ router.get('/analyte/:id', async (req, res) => {
     }
 })
 
+router.delete('/analyte/:id', async (req,res) => {
+
+    try {
+        const deletedAnalyte = await Analyte.findByIdAndDelete(req.params.id)
+        if(!deletedAnalyte) {
+            res.status(404).send('No task found by id provided!')
+        } else {
+            res.status(200).send(deletedAnalyte)
+        }
+    } catch (e) {
+        res.status(500).send(e.message)
+    }
+})
+
 module.exports = router
