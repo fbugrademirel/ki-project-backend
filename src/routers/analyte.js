@@ -26,7 +26,13 @@ router.patch('/analyte/:id', async (req, res) => {
 
     try {
         const analyte = await Analyte.findById(req.params.id)
+
+        if(!analyte) {
+            return res.send(404).send('No analyte found for id provided!')
+        }
+
         analyte.measurements = analyte.measurements.concat(req.body['measurements'])
+
         await analyte.save()
 
         if (!analyte) {
