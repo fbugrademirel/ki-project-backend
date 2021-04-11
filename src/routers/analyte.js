@@ -27,6 +27,7 @@ router.patch('/analyte/:id', async (req, res) => {
     try {
         const analyte = await Analyte.findById(req.params.id)
 
+
         if(!analyte) {
             return res.status(404).send('Analyte could not be found by id: '+ req.params.id)
         }
@@ -35,6 +36,15 @@ router.patch('/analyte/:id', async (req, res) => {
 
         await analyte.save()
         res.status(200).send(analyte)
+    } catch (e) {
+        res.status(500).send(e.message)
+    }
+})
+
+router.get('/analyte/all', async (req, res) => {
+    try {
+        const analytes = await Analyte.find({})
+        res.status(200).send(analytes)
     } catch (e) {
         res.status(500).send(e.message)
     }
