@@ -16,23 +16,32 @@ router.post('/analyte', async (req, res) => {
 
 router.patch('/analyte/:id', async (req, res) => {
 
-    const allowedOperation = 'measurements'
+    const allowedOperations = ['measurements', 'isCalibrated', 'calibrationTime', 'calibrationParameters']
     const updates = Object.keys(req.body)
+    const isValidOperation = updates.every((key) => allowedOperations.includes(key))
 
-    const isValidOperation = updates.every((key) => { return key === allowedOperation })
     if (!isValidOperation) {
-        res.status(400).send('Invalid operation')
+        return res.status(400).send('Invalid operation')
     }
 
     try {
         const analyte = await Analyte.findById(req.params.id)
 
-
         if(!analyte) {
             return res.status(404).send('Analyte could not be found by id: '+ req.params.id)
         }
-
-        analyte.measurements = analyte.measurements.concat(req.body['measurements'])
+        if(updates.includes('measurements')) {
+            analyte.measurements = analyte.measurements.concat(req.body['measurements'])
+        }
+        if(updates.includes('isCalibrated')) {
+            analyte.isCalibrated = req.body['isCalibrated']
+        }
+        if(updates.includes('calibrationTime')) {
+            analyte.calibrationTime = req.body['calibrationTime']
+        }
+        if(updates.includes('calibrationParameters')) {
+            analyte.calibrationParameters = req.body['calibrationParameters']
+        }
 
         await analyte.save()
         res.status(200).send(analyte)
