@@ -13,32 +13,32 @@ const analyteSchema = new mongoose.Schema({
         unique: true
     },
 
-    isCalibrated: {
-        type: Boolean,
-        required: true,
-        default: false,
-    },
-
-    calibrationTime: {
-        type: Number,
-        required: function () {
-            return this.isCalibrated
-        },
-    },
-
     calibrationParameters: {
-        x: {
+        isCalibrated: {
+            type: Boolean,
+            required: true,
+            default: false
+        },
+        calibrationTime: {
             type: Number,
             required: function () {
-                return this.isCalibrated
+                return this.calibrationParameters.isCalibrated
             },
         },
-        y: {
-            type: Number,
-            required: function () {
-                return this.isCalibrated
+        correlationEquationParameters: {
+            slope: {
+                type: Number,
+                required: function () {
+                    return this.calibrationParameters.isCalibrated
+                },
             },
-        },
+            constant: {
+                type: Number,
+                required: function () {
+                    return this.calibrationParameters.isCalibrated
+                },
+            }
+        }
     },
 
     measurements: [

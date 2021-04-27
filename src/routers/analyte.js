@@ -16,7 +16,7 @@ router.post('/analyte', async (req, res) => {
 
 router.patch('/analyte/:id', async (req, res) => {
 
-    const allowedOperations = ['measurements', 'isCalibrated', 'calibrationTime', 'calibrationParameters']
+    const allowedOperations = ['measurements', 'calibrationParameters']
     const updates = Object.keys(req.body)
     const isValidOperation = updates.every((key) => allowedOperations.includes(key))
 
@@ -33,15 +33,19 @@ router.patch('/analyte/:id', async (req, res) => {
         if(updates.includes('measurements')) {
             analyte.measurements = analyte.measurements.concat(req.body['measurements'])
         }
-        if(updates.includes('isCalibrated')) {
-            analyte.isCalibrated = req.body['isCalibrated']
-        }
-        if(updates.includes('calibrationTime')) {
-            analyte.calibrationTime = req.body['calibrationTime']
-        }
         if(updates.includes('calibrationParameters')) {
             analyte.calibrationParameters = req.body['calibrationParameters']
         }
+
+        // if(updates.includes('isCalibrated')) {
+        //     analyte.isCalibrated = req.body['isCalibrated']
+        // }
+        // if(updates.includes('calibrationTime')) {
+        //     analyte.calibrationTime = req.body['calibrationTime']
+        // }
+        // if(updates.includes('calibrationParameters')) {
+        //     analyte.calibrationParameters = req.body['calibrationParameters']
+        // }
 
         await analyte.save()
         res.status(200).send(analyte)
