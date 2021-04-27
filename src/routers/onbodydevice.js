@@ -38,8 +38,18 @@ router.get('/onbodydevice/allanalytes/:id', async (req, res) => {
     }
 })
 
-router.get('onbodydevice/:id', async (req, res) => {
+router.get('/onbodydevice/:id', async (req, res) => {
 
+    try {
+        const device = await OnBodyDevice.findById(req.params.id)
+        if (!device) {
+            res.status(404).send('No device is found by the id: ' + req.params.id )
+        } else {
+            res.status(200).send(device)
+        }
+    } catch (e) {
+        res.status(500).send(e.message)
+    }
 })
 
 router.delete('/onbodydevice/:id',async (req, res) => {
