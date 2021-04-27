@@ -4,12 +4,14 @@ const express = require('express')
 require('./db/mongoose.js')
 
 const analyteRouter = require('./routers/analyte')
+const onBodyDeviceRouter = require('./routers/onbodydevice')
 
 // Initialize the server
 const app = express()
 
 app.use(express.json())
 app.use(analyteRouter)
+app.use(onBodyDeviceRouter)
 
 const port = process.env.PORT || 3000
 

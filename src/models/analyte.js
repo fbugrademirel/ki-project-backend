@@ -41,6 +41,12 @@ const analyteSchema = new mongoose.Schema({
         }
     },
 
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'OnBodyDevice'
+    },
+
     measurements: [
         {
             time: {
@@ -56,6 +62,12 @@ const analyteSchema = new mongoose.Schema({
     timestamps: true
 })
 
-const Analyte = mongoose.model('analyte', analyteSchema)
+analyteSchema.virtual('analytes', {
+    ref: 'OnBodyDevice',
+    localField: '_id',
+    foreignField: 'owner'
+})
+
+const Analyte = mongoose.model('Analyte', analyteSchema)
 
 module.exports = Analyte
