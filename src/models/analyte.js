@@ -62,12 +62,6 @@ const analyteSchema = new mongoose.Schema({
     timestamps: true
 })
 
-analyteSchema.virtual('analytes', {
-    ref: 'OnBodyDevice',
-    localField: '_id',
-    foreignField: 'owner'
-})
-
 const Analyte = mongoose.model('Analyte', analyteSchema)
 
 module.exports = Analyte

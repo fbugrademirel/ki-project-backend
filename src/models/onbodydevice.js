@@ -19,6 +19,12 @@ const onBodyDeviceSchema = mongoose.Schema({
     timestamps: true
 })
 
+onBodyDeviceSchema.virtual('analytes', {
+    ref: 'Analyte',
+    localField: '_id',
+    foreignField: 'owner'
+})
+
 const OnBodyDevice = mongoose.model('OnBodyDevice', onBodyDeviceSchema)
 
 module.exports = OnBodyDevice

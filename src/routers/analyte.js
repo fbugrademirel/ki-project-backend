@@ -1,8 +1,9 @@
 const express = require('express')
 const router = new express.Router('/analyte')
 const Analyte = require('../models/analyte')
+const verifyOwner = require('../middleware/verify')
 
-router.post('/analyte', async (req, res) => {
+router.post('/analyte', verifyOwner, async (req, res) => {
 
     const analyte = new Analyte(req.body)
 
@@ -36,16 +37,6 @@ router.patch('/analyte/:id', async (req, res) => {
         if(updates.includes('calibrationParameters')) {
             analyte.calibrationParameters = req.body['calibrationParameters']
         }
-
-        // if(updates.includes('isCalibrated')) {
-        //     analyte.isCalibrated = req.body['isCalibrated']
-        // }
-        // if(updates.includes('calibrationTime')) {
-        //     analyte.calibrationTime = req.body['calibrationTime']
-        // }
-        // if(updates.includes('calibrationParameters')) {
-        //     analyte.calibrationParameters = req.body['calibrationParameters']
-        // }
 
         await analyte.save()
         res.status(200).send(analyte)
