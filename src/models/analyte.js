@@ -13,6 +13,40 @@ const analyteSchema = new mongoose.Schema({
         unique: true
     },
 
+    calibrationParameters: {
+        isCalibrated: {
+            type: Boolean,
+            required: true,
+            default: false
+        },
+        calibrationTime: {
+            type: Number,
+            required: function () {
+                return this.calibrationParameters.isCalibrated
+            },
+        },
+        correlationEquationParameters: {
+            slope: {
+                type: Number,
+                required: function () {
+                    return this.calibrationParameters.isCalibrated
+                },
+            },
+            constant: {
+                type: Number,
+                required: function () {
+                    return this.calibrationParameters.isCalibrated
+                },
+            }
+        }
+    },
+
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'OnBodyDevice'
+    },
+
     measurements: [
         {
             time: {
@@ -28,6 +62,6 @@ const analyteSchema = new mongoose.Schema({
     timestamps: true
 })
 
-const Analyte = mongoose.model('analyte', analyteSchema)
+const Analyte = mongoose.model('Analyte', analyteSchema)
 
 module.exports = Analyte

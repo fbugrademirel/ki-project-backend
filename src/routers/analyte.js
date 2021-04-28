@@ -1,8 +1,9 @@
 const express = require('express')
 const router = new express.Router('/analyte')
 const Analyte = require('../models/analyte')
+const verifyOwner = require('../middleware/verify')
 
-router.post('/analyte', async (req, res) => {
+router.post('/analyte', verifyOwner, async (req, res) => {
 
     const analyte = new Analyte(req.body)
 
@@ -16,23 +17,27 @@ router.post('/analyte', async (req, res) => {
 
 router.patch('/analyte/:id', async (req, res) => {
 
-    const allowedOperation = 'measurements'
+    const allowedOperations = ['measurements', 'calibrationParameters']
     const updates = Object.keys(req.body)
+    const isValidOperation = updates.every((key) => allowedOperations.includes(key))
 
-    const isValidOperation = updates.every((key) => { return key === allowedOperation })
     if (!isValidOperation) {
-        res.status(400).send('Invalid operation')
+        return res.status(400).send('Invalid operation')
     }
 
     try {
         const analyte = await Analyte.findById(req.params.id)
 
-
         if(!analyte) {
             return res.status(404).send('Analyte could not be found by id: '+ req.params.id)
         }
 
-        analyte.measurements = analyte.measurements.concat(req.body['measurements'])
+        if(updates.includes('measurements')) {
+            analyte.measurements = analyte.measurements.concat(req.body['measurements'])
+        }
+        if(updates.includes('calibrationParameters')) {
+            analyte.calibrationParameters = req.body['calibrationParameters']
+        }
 
         await analyte.save()
         res.status(200).send(analyte)
