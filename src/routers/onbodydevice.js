@@ -52,6 +52,38 @@ router.get('/onbodydevice/:id', async (req, res) => {
     }
 })
 
+router.patch('/onbodydevice/:id', async (req, res) => {
+
+    const allowedOperations = ['name', 'personalID']
+    const updates = Object.keys(req.body)
+
+    const isValidOperation = updates.every((elem) => {
+       return allowedOperations.includes(elem)
+    })
+
+    if (!isValidOperation) {
+        return res.status(400).send('Invalid operation')
+    }
+
+    try {
+        const device = await OnBodyDevice.findById(req.params.id)
+
+        if (!device) {
+            return res.status(404).send('Device could not be found by id: ' + req.params.id)
+        }
+
+        updates.forEach((update) => {
+            device[update] = req.body[update]
+        })
+
+        await device.save()
+        res.status(200).send(device)
+
+    } catch (e) {
+        res.status(500).send(e.message)
+    }
+})
+
 router.delete('/onbodydevice/:id',async (req, res) => {
     try {
         const deletedDevice = await OnBodyDevice.findByIdAndDelete(req.params.id)

@@ -31,6 +31,7 @@ router.patch('/analyte/:id', async (req, res) => {
         if(!analyte) {
             return res.status(404).send('Analyte could not be found by id: '+ req.params.id)
         }
+
         if(updates.includes('measurements')) {
             analyte.measurements = analyte.measurements.concat(req.body['measurements'])
         }
