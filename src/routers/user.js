@@ -19,7 +19,7 @@ router.post('/user', async (req, res) => {
     try {
         await user.save()
         const token = await user.generateAuthorizationToken()
-        res.status(201).send({user, token})
+        res.status(201).send({user: user.getPublicData(), token})
     } catch (e) {
         res.status(400).send(e.message)
     }
@@ -29,11 +29,10 @@ router.post('/user', async (req, res) => {
 LOGIN
  */
 router.post('/user/login', async (req, res) => {
-
     try {
         const user = await User.findByLoginInfo(req.body.email, req.body.password)
         const token = await user.generateAuthorizationToken()
-        res.status(200).send({user, token})
+        res.status(200).send({user: user.getPublicData(), token})
     } catch (e) {
         res.status(400).send(e.message)
     }
@@ -41,9 +40,8 @@ router.post('/user/login', async (req, res) => {
 
 
 /**
- * LOGOUT -- Req Authentication
+ * LOGOUT Single -- Req Authentication
  */
-
 router.post('/user/logout', auth, async (req, res) => {
     try {
         req.user.tokens = req.user.tokens.filter((token) => {
@@ -57,9 +55,22 @@ router.post('/user/logout', auth, async (req, res) => {
 })
 
 /**
+ * LOGOUT ALL -- Req Authentication
+ */
+router.post('/user/logout/all', auth, async (req, res) => {
+    try {
+        req.user.tokens = [] // clear all the tokens of the user
+        await req.user.save()
+        res.status(200).send()
+    } catch (e) {
+        res.status(500).send(e.message)
+    }
+})
+
+
+/**
  * READ Own Profile -- Req Authentication --
  */
-
 router.get('/user/me', auth, async (req, res) => {
     try {
         res.status(200).send(req.user)
@@ -68,6 +79,38 @@ router.get('/user/me', auth, async (req, res) => {
     }
 })
 
+/**
+ * UPDATE Own Profile -- Req Authentication --
+ */
+router.patch('/user/me', auth, async (req, res) => {
+    const updates = Object.keys(req.body)
+    
+    const allowedUpdates = ['email', 'password']
+    const isValidOperation = updates.every((update) => allowedUpdates.includes(update))
+    
+    if (!isValidOperation) {
+        return res.status(400).send({error: "'Invalid update operation"})
+    }
+    
+    try {
+        updates.forEach((update) => req.user[update] = req.body[update])
+        await req.user.save()
+        res.status(200).send(req.user.getPublicData())
+    } catch (e) {
+        res.status(400).send(e.message)
+    }
+})
 
+/**
+ * DELETE Own Profile -- Req Authentication --
+ */
+router.delete('/user/me', auth, async (req, res) => {
+    try {
+        await req.user.remove()
+        res.status(200).send(req.user.getPublicData())
+    } catch (e) {
+        res.status(500).send(e.message)
+    }
+})
 
 module.exports = router

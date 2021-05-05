@@ -44,7 +44,7 @@ const userSchema = new mongoose.Schema({
 })
 
 /**
- * This method is added to schema methods and related to object instance
+ * These method is added to schema methods and related to object instance
  */
 
 userSchema.methods.generateAuthorizationToken = async function () {
@@ -53,6 +53,20 @@ userSchema.methods.generateAuthorizationToken = async function () {
     await this.save()
     return token
 }
+
+/**
+ * delete the password and tokens field from the object to send back public data
+ * @returns {*}
+ */
+userSchema.methods.getPublicData = function () {
+    const userObject = this.toObject()
+
+    delete userObject.password
+    delete userObject.tokens
+
+    return userObject
+}
+
 
 /**
  * This method is added to schema statics and related to data model
