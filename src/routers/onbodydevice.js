@@ -2,10 +2,18 @@ const express = require('express')
 const router = new express.Router('/onbodydevice')
 const OnBodyDevice = require('../models/onbodydevice')
 const Analyte = require('../models/analyte')
+const auth = require('../middleware/auth')
 
-router.post('/onbodydevice', async (req, res) => {
 
-    const device = new OnBodyDevice(req.body)
+/**
+ * --- AUTHENTICATED--- ------> Connected to App
+ */
+router.post('/onbodydevice', auth, async (req, res) => {
+
+    const device = new OnBodyDevice({
+        ...req.body,
+        owner: req.user._id
+    })
 
     try {
         await device.save()
@@ -15,16 +23,22 @@ router.post('/onbodydevice', async (req, res) => {
     }
 })
 
-router.get('/onbodydevice/all', async (req, res) => {
+/**
+ * ---  AUTHENTICATED -------> Connected to APP
+ */
+router.get('/onbodydevice/all', auth, async (req, res) => {
     try {
-        const devices = await OnBodyDevice.find({})
+        const devices = await OnBodyDevice.find({owner: req.user._id})
         res.status(200).send(devices)
     } catch (e) {
         res.status(500).send(e.message)
     }
 })
 
-router.get('/onbodydevice/allanalytes/:id', async (req, res) => {
+/**
+ * ---AUTHENTICATED---------> Connected to App
+ */
+router.get('/onbodydevice/allanalytes/:id', auth, async (req, res) => {
 
     try {
         const device = await OnBodyDevice.findById(req.params.id)
@@ -38,7 +52,10 @@ router.get('/onbodydevice/allanalytes/:id', async (req, res) => {
     }
 })
 
-router.get('/onbodydevice/:id', async (req, res) => {
+/**
+ * ---AUTHENTICATED---
+ */
+router.get('/onbodydevice/:id', auth, async (req, res) => {
 
     try {
         const device = await OnBodyDevice.findById(req.params.id)
@@ -52,7 +69,10 @@ router.get('/onbodydevice/:id', async (req, res) => {
     }
 })
 
-router.patch('/onbodydevice/:id', async (req, res) => {
+/**
+ * ---AUTHENTICATED---
+ */
+router.patch('/onbodydevice/:id', auth, async (req, res) => {
 
     const allowedOperations = ['name', 'personalID']
     const updates = Object.keys(req.body)
@@ -84,7 +104,10 @@ router.patch('/onbodydevice/:id', async (req, res) => {
     }
 })
 
-router.delete('/onbodydevice/:id',async (req, res) => {
+/**
+ * ---AUTHENTICATED---------> Connected to App
+ */
+router.delete('/onbodydevice/:id', auth, async (req, res) => {
     try {
         const deletedDevice = await OnBodyDevice.findByIdAndDelete(req.params.id)
         if (!deletedDevice) {

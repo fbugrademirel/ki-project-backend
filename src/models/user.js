@@ -43,6 +43,12 @@ const userSchema = new mongoose.Schema({
     timestamps: true
 })
 
+userSchema.virtual('onbodydevices', {
+    ref: 'OnBodyDevice',
+    localField: '_id',
+    foreignField: 'owner'
+})
+
 /**
  * These method is added to schema methods and related to object instance
  */

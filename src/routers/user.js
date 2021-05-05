@@ -113,4 +113,18 @@ router.delete('/user/me', auth, async (req, res) => {
     }
 })
 
+/**
+ * Get all devices associated with the user
+ * --- AUTHENTICATED---
+ */
+router.get('/user/allonbodydevices', auth, async (req, res) => {
+    try {
+        const user = req.user
+        await user.populate('onbodydevices').execPopulate()
+        res.status(200).send(user.onbodydevices)
+    } catch (e) {
+        res.status(500).send(e.message)
+    }
+})
+
 module.exports = router
