@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const validator = require('validator')
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
 
 const userSchema = new mongoose.Schema({
 
@@ -26,18 +27,39 @@ const userSchema = new mongoose.Schema({
         trim: true,
         regex: /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8,1024}$/,
         minlength: 6,
-        maxlength: 16,
         validate(value) {
             if(value.toLowerCase().includes('password')){
                 throw new Error('Password cannot be "password"!')
             }
         }
     },
-
+    tokens: [{
+        token: {
+            type: String,
+            required: true
+        }
+    }]
 }, {
     timestamps: true
 })
 
+/**
+ * This method is added to schema methods and related to object instance
+ */
+
+userSchema.methods.generateAuthorizationToken = async function () {
+    const token = jwt.sign({_id: this._id.toString()}, 'ki-kth-project')
+    this.tokens = this.tokens.concat({ token })
+    await this.save()
+    return token
+}
+
+/**
+ * This method is added to schema statics and related to data model
+ * @param email
+ * @param password
+ * @returns {Promise<*>}
+ */
 userSchema.statics.findByLoginInfo = async (email, password) => {
     const user = await User.findOne({ email })
     if(!user) {
