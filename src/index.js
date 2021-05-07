@@ -3,7 +3,7 @@ const express = require('express')
 // Connect to database and initiate
 require('./db/mongoose.js')
 
-const analyteRouter = require('./routers/analyte')
+const analyteRouter = require('./routers/microneedle')
 const onBodyDeviceRouter = require('./routers/onbodydevice')
 const userRouter = require('./routers/user')
 

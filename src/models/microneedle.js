@@ -1,9 +1,16 @@
 const mongoose = require('mongoose')
 
-const analyteSchema = new mongoose.Schema({
+const mnSchema = new mongoose.Schema({
 
     description: {
         type: String,
+        enum:['MN#1', 'MN#2', 'MN#3', 'MN#4', 'MN#5','MN#6', 'MN#7'],
+        required: true
+    },
+
+    associatedAnalyte: {
+        type: String,
+        enum: ['sodium', 'pH', 'potassium', 'chloride'],
         required: true
     },
 
@@ -62,6 +69,9 @@ const analyteSchema = new mongoose.Schema({
     timestamps: true
 })
 
-const Analyte = mongoose.model('Analyte', analyteSchema)
+mnSchema.index({description: 1, owner: 1}, {unique: true});
 
-module.exports = Analyte
+
+const Microneedle = mongoose.model('Microneedle', mnSchema)
+
+module.exports = Microneedle
