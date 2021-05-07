@@ -4,6 +4,7 @@ const mnSchema = new mongoose.Schema({
 
     description: {
         type: String,
+        enum:['MN#1', 'MN#2', 'MN#3', 'MN#4', 'MN#5','MN#6', 'MN#7'],
         required: true
     },
 
@@ -67,6 +68,9 @@ const mnSchema = new mongoose.Schema({
 }, {
     timestamps: true
 })
+
+mnSchema.index({description: 1, owner: 1}, {unique: true});
+
 
 const Microneedle = mongoose.model('Microneedle', mnSchema)
 
