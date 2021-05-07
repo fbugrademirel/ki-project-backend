@@ -24,8 +24,8 @@ const onBodyDeviceSchema = mongoose.Schema({
     timestamps: true
 })
 
-onBodyDeviceSchema.virtual('analytes', {
-    ref: 'Analyte',
+onBodyDeviceSchema.virtual('microneedles', {
+    ref: 'Microneedle',
     localField: '_id',
     foreignField: 'owner'
 })
