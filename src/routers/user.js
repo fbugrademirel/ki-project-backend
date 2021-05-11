@@ -73,7 +73,7 @@ router.post('/user/logout/all', auth, async (req, res) => {
  */
 router.get('/user/me', auth, async (req, res) => {
     try {
-        res.status(200).send(req.user)
+        res.status(200).send(req.user.getPublicData())
     } catch (e) {
         res.status(500).send(e.message)
     }
