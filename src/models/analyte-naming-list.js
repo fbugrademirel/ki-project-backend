@@ -6,7 +6,6 @@ const analyteListSchema = new mongoose.Schema({
             analyte: {
                 type: String,
                 required: true,
-                lowercase: true,
                 unique: true
             }
         }]
