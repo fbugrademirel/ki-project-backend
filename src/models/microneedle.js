@@ -1,16 +1,55 @@
 const mongoose = require('mongoose')
+const AnalyteNamingList = require('./analyte-naming-list')
+const fs = require('fs')
+
+//This file read can be changed to a cloud bucket in later implementations
+const fileContentOfAnalytes = fs.readFileSync('src/resources/analytes.txt', 'utf-8')
+const analytes = fileContentOfAnalytes.split('\n')
+
+const setAnalytesOnDatabase = async function() {
+    try {
+        const arr = []
+        analytes.forEach(value => {
+            const elem = '{"analyte": "' + value + '"}'
+            arr.push(elem)
+        })
+        const json = '{"analytes": [' + arr.join(',') + ']}'
+
+        const analyteNamingList = await AnalyteNamingList.findOneAndUpdate({}, JSON.parse(json), { new: true, useFindAndModify: false})
+
+        if(!analyteNamingList) {
+            const list = new AnalyteNamingList(JSON.parse(json))
+            await list.save()
+        }
+
+    } catch (e) {
+        console.log(e.message)
+    }
+}
+
+setAnalytesOnDatabase().then().catch( e => {
+    console.log(e.message)
+})
+
+const baseMNNaming = 'MN#'
+const mnEnumsForSchema = []
+
+for (let i = 1; i <= 200; i++) {
+    const name = baseMNNaming + i
+    mnEnumsForSchema.push(name)
+}
 
 const mnSchema = new mongoose.Schema({
 
     description: {
         type: String,
-        enum:['MN#1', 'MN#2', 'MN#3', 'MN#4', 'MN#5','MN#6', 'MN#7'],
+        enum: mnEnumsForSchema,
         required: true
     },
 
     associatedAnalyte: {
         type: String,
-        enum: ['sodium', 'pH', 'potassium', 'chloride'],
+        enum: analytes,
         required: true
     },
 
@@ -64,7 +103,7 @@ const mnSchema = new mongoose.Schema({
                 type: Number,
                 required: true
             }
-    }]
+        }]
 }, {
     timestamps: true
 })

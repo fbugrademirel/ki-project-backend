@@ -6,6 +6,7 @@ require('./db/mongoose.js')
 const analyteRouter = require('./routers/microneedle')
 const onBodyDeviceRouter = require('./routers/onbodydevice')
 const userRouter = require('./routers/user')
+const analyteListRouter = require('./routers/analyte-naming-list')
 
 // Initialize the server
 const app = express()
@@ -14,6 +15,7 @@ app.use(express.json())
 app.use(analyteRouter)
 app.use(onBodyDeviceRouter)
 app.use(userRouter)
+app.use(analyteListRouter)
 
 const port = process.env.PORT || 3000
 
