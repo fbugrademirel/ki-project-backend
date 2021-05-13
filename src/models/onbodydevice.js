@@ -5,21 +5,30 @@ const onBodyDeviceSchema = mongoose.Schema({
         type: String,
         required: true,
     },
+
     personalID: {
         type: Number,
         required: true,
         unique: true
     },
+
     deviceID: {
       type: String,
       required: true,
       unique: true
     },
+
     owner: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
         ref: 'User'
+    },
+
+    intendedNumberOfNeedles: {
+        type: Number,
+        required: true
     }
+
 }, {
     timestamps: true
 })
