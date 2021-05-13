@@ -7,7 +7,7 @@ const endpoint = '/analytenaminglist'
 
 router.get(endpoint, auth, async (req, res) => {
     try {
-        const list = await AnalyteNamingList.findById('609c6f72b6aa08a63bb4b3be')
+        const list = await AnalyteNamingList.findOne({})
 
         if(!list) {
             return res.status(400).send('List is null')
