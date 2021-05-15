@@ -26,7 +26,9 @@ const onBodyDeviceSchema = mongoose.Schema({
 
     intendedNumberOfNeedles: {
         type: Number,
-        required: true
+        required: true,
+        max: 200,
+        min: 1
     }
 
 }, {
