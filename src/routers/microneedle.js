@@ -39,9 +39,9 @@ router.patch(endPoint + '/:id', async (req, res) => {
         if(updates.includes('calibrationParameters')) {
             microNeedle.calibrationParameters = req.body['calibrationParameters']
         }
-
         await microNeedle.save()
-        res.status(200).send()
+        res.status(200).send(microNeedle.getWithoutMeasurements())
+
     } catch (e) {
         res.status(500).send(e.message)
     }

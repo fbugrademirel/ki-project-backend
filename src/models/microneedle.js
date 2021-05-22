@@ -110,6 +110,16 @@ const mnSchema = new mongoose.Schema({
 
 mnSchema.index({description: 1, owner: 1}, {unique: true});
 
+/**
+ * delete the password and tokens field from the object to send back public data
+ * @returns {*}
+ */
+mnSchema.methods.getWithoutMeasurements = function () {
+    const mnObj = this.toObject()
+    delete mnObj.measurements
+    return mnObj
+}
+
 
 const Microneedle = mongoose.model('Microneedle', mnSchema)
 

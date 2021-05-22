@@ -53,6 +53,29 @@ router.get(endPoint + '/allmicroneedles/:id', auth, async (req, res) => {
 })
 
 /**
+ * ---AUTHENTICATED---------> Connected to App
+ */
+router.get(endPoint + '/onlyallmicroneedles/:id', auth, async (req, res) => {
+
+    try {
+        const device = await OnBodyDevice.findById(req.params.id)
+        if(!device) {
+            return res.status(404).send('No device is found by provided id: ' + req.params.id )
+        }
+        await device.populate('microneedles').execPopulate()
+
+        // For this route, do not send the measurements!
+        device.microneedles.forEach( mn => {
+            mn.measurements = undefined
+        })
+
+        res.status(200).send(device.microneedles)
+    } catch (e) {
+        res.status(500).send(e.message)
+    }
+})
+
+/**
  * ---AUTHENTICATED---
  */
 router.get(endPoint + '/:id', auth, async (req, res) => {
