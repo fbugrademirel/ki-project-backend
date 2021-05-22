@@ -41,7 +41,7 @@ router.patch(endPoint + '/:id', async (req, res) => {
         }
 
         await microNeedle.save()
-        res.status(200).send(microNeedle)
+        res.status(200).send()
     } catch (e) {
         res.status(500).send(e.message)
     }
