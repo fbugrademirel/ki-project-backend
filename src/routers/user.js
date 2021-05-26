@@ -48,7 +48,7 @@ router.post('/user/logout', auth, async (req, res) => {
             return token.token !== req.token // filter out the current token on the request
         })
         await req.user.save() // Save user with the filtered out token (With all remaining ones)
-        res.status(200).send()
+        res.status(204).send()
     } catch (e) {
         res.status(500).send(e.message)
     }
@@ -61,7 +61,7 @@ router.post('/user/logout/all', auth, async (req, res) => {
     try {
         req.user.tokens = [] // clear all the tokens of the user
         await req.user.save()
-        res.status(200).send()
+        res.status(204).send()
     } catch (e) {
         res.status(500).send(e.message)
     }
@@ -83,6 +83,13 @@ router.get('/user/me', auth, async (req, res) => {
  * UPDATE Own Profile -- Req Authentication --
  */
 router.patch('/user/me', auth, async (req, res) => {
+
+    //Should this be implemented as a middleware?
+    const acceptValue = req.headers['accept']
+    if(acceptValue !== 'application/json' && acceptValue !== '*/*') {
+        return res.status(406).send('Only json format is supported')
+    }
+
     const updates = Object.keys(req.body)
     
     const allowedUpdates = ['email', 'password', 'name']
