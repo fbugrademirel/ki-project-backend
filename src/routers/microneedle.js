@@ -1,6 +1,7 @@
 const express = require('express')
 const router = new express.Router('/analyte')
 const Microneedle = require('../models/microneedle')
+const Measurement = require('../models/measurement')
 const verifyOwner = require('../middleware/verify')
 const endPoint = '/microneedle'
 
@@ -40,7 +41,8 @@ router.patch(endPoint + '/:id', async (req, res) => {
             microNeedle.calibrationParameters = req.body['calibrationParameters']
         }
         await microNeedle.save()
-        res.status(200).send(microNeedle.getWithoutMeasurements())
+       // res.status(200).send(microNeedle.getWithoutMeasurements())
+        res.status(200).send(microNeedle)
 
     } catch (e) {
         res.status(500).send(e.message)
@@ -64,7 +66,10 @@ router.get(endPoint + '/:id', async (req, res) => {
         if (!microNeedle) {
             res.status(404).send('Microneedle could not be found by id: '+ req.params.id)
         } else {
-            res.status(200).send(microNeedle)
+            await microNeedle.populate('measurements').execPopulate()
+            const obj = microNeedle.toObject()
+            obj.measurements = microNeedle.measurements
+            res.status(200).send(obj)
         }
     } catch (e) {
         res.status(500).send(e.message)

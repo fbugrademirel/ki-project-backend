@@ -7,6 +7,7 @@ const analyteRouter = require('./routers/microneedle')
 const onBodyDeviceRouter = require('./routers/onbodydevice')
 const userRouter = require('./routers/user')
 const analyteListRouter = require('./routers/analyte-naming-list')
+const measurementRouter = require('./routers/measurement')
 
 // Initialize the server
 const app = express()
@@ -16,6 +17,7 @@ app.use(analyteRouter)
 app.use(onBodyDeviceRouter)
 app.use(userRouter)
 app.use(analyteListRouter)
+app.use(measurementRouter)
 
 const port = process.env.PORT || 3000
 

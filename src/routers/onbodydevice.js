@@ -1,7 +1,8 @@
 const express = require('express')
 const router = new express.Router('/onbodydevice')
 const OnBodyDevice = require('../models/onbodydevice')
-const Analyte = require('../models/microneedle')
+const Microneedle = require('../models/microneedle')
+const Measurement = require('../models/measurement')
 const auth = require('../middleware/auth')
 const endPoint = '/onbodydevice'
 
@@ -45,8 +46,24 @@ router.get(endPoint + '/allmicroneedles/:id', auth, async (req, res) => {
         if(!device) {
             return res.status(404).send('No device is found by provided id: ' + req.params.id )
         }
-        await device.populate('microneedles').execPopulate()
-        res.status(200).send(device.microneedles)
+
+        await device.populate({
+            path: 'microneedles',
+            populate: {
+                path: 'measurements',
+                model: 'Measurement'
+            }
+        }).execPopulate()
+
+        const updatedMicroneedlesToBeSendBack = []
+
+        for (let i = 0; i < device.microneedles.length; i++) {
+            let objForm = device.microneedles[i].toObject()
+            objForm["measurements"] = device.microneedles[i].measurements
+            updatedMicroneedlesToBeSendBack.push(objForm)
+        }
+
+        res.status(200).send(updatedMicroneedlesToBeSendBack)
     } catch (e) {
         res.status(500).send(e.message)
     }
@@ -62,13 +79,8 @@ router.get(endPoint + '/onlyallmicroneedles/:id', auth, async (req, res) => {
         if(!device) {
             return res.status(404).send('No device is found by provided id: ' + req.params.id )
         }
-        await device.populate('microneedles').execPopulate()
 
-        // For this route, do not send the measurements!
-        device.microneedles.forEach( mn => {
-            mn.measurements = undefined
-        })
-
+        device.populate('microneedles').execPopulate()
         res.status(200).send(device.microneedles)
     } catch (e) {
         res.status(500).send(e.message)
@@ -136,7 +148,7 @@ router.delete(endPoint + '/:id', auth, async (req, res) => {
         if (!deletedDevice) {
             res.status(404).send('Device is not found by id: ' + req.params.id)
         } else {
-            await Analyte.deleteMany({owner: deletedDevice._id})
+            await Microneedle.deleteMany({owner: deletedDevice._id})
             res.status(200).send(deletedDevice)
         }
     } catch (e) {
