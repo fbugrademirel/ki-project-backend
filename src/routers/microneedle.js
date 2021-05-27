@@ -19,7 +19,7 @@ router.post(endPoint, verifyOwner, async (req, res) => {
 
 router.patch(endPoint + '/:id', async (req, res) => {
 
-    const allowedOperations = ['measurements', 'calibrationParameters']
+    const allowedOperations = ['calibrationParameters']
     const updates = Object.keys(req.body)
     const isValidOperation = updates.every((key) => allowedOperations.includes(key))
 
@@ -34,14 +34,11 @@ router.patch(endPoint + '/:id', async (req, res) => {
             return res.status(404).send('Microneedle could not be found by id: '+ req.params.id)
         }
 
-        if(updates.includes('measurements')) {
-            microNeedle.measurements = microNeedle.measurements.concat(req.body['measurements'])
-        }
         if(updates.includes('calibrationParameters')) {
             microNeedle.calibrationParameters = req.body['calibrationParameters']
         }
+
         await microNeedle.save()
-       // res.status(200).send(microNeedle.getWithoutMeasurements())
         res.status(200).send(microNeedle)
 
     } catch (e) {
