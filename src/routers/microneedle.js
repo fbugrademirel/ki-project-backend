@@ -56,57 +56,81 @@ router.get(endPoint + '/all', async (req, res) => {
 })
 
 router.get(endPoint + '/:id', async (req, res) => {
-
     try {
         const microNeedle = await Microneedle.findById(req.params.id)
-
-        const agg = await Measurement.aggregate([
-            { "$match": { owner: microNeedle._id } },
-            { "$sort": {time: - 1}},
-            {
-                "$project": {
-                    "_id": "$_id",
-                    "value": "$value",
-                    "time" : {
-                        $dateFromString: {
-                            dateString: {
-                                $dateToString: {
-                                    date: {
-                                        $toDate: {
-                                            $multiply: ["$time", 1000]
-                                        }
-                                        }, format: "%Y-%m-%dT%H:%M"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            {
-                $group: {
-                    _id: "$time",
-                    value: { $first:"$value"}
-                }
-            },
-            { "$sort": {"_id": -1}},
-            {"$limit": 600}
-        ])
-
-        console.log(agg)
 
         if (!microNeedle) {
             res.status(404).send('Microneedle could not be found by id: '+ req.params.id)
         } else {
-            await microNeedle.populate({
-                path: 'measurements',
-                options: {
-                    sort : { time: -1 },
-                  //  limit: 600,
-                }
-            }).execPopulate()
-            const obj = microNeedle.toObject()
-            obj.measurements = microNeedle.measurements
-            res.status(200).send(obj)
+            if (req.query.interval === 'seconds' || req.query.interval === undefined) {
+                await microNeedle.populate({
+                    path: 'measurements',
+                    options: {
+                        sort : { time: -1 },
+                        limit: 600,
+                    }
+                }).execPopulate()
+                const obj = microNeedle.toObject()
+
+                obj.measurements = microNeedle.measurements
+
+                obj.measurements.forEach( m => {
+                    m._id = undefined
+                    m.owner = undefined
+                    m.__v = undefined
+                    m.createdAt = undefined
+                    m.updatedAt = undefined
+                })
+                return res.status(200).send(obj)
+
+            } else if (req.query.interval === 'minutes') {
+                const agg = await Measurement.aggregate([
+                    {
+                        $match: { owner: microNeedle._id }
+                    },
+                    {
+                        $sort: {time: - 1}
+                    },
+                    {
+                        $project: {
+                            _id: "$_id",
+                            value: "$value",
+                            time : {
+                                $dateFromString: {
+                                    dateString: {
+                                        $dateToString: {
+                                            date: {
+                                                $toDate: {
+                                                    $multiply: ["$time", 1000]
+                                                }
+                                            }, format: "%Y-%m-%dT%H:%M"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: "$time",
+                            value: { $first:"$value"}
+                        }
+                    },
+                    { "$sort": {"_id": -1}},
+                    {"$limit": 600}
+                ])
+
+                const obj = microNeedle.toObject()
+                obj.measurements = []
+                agg.forEach(m => {
+                    const entry = {
+                        time: new Date(m._id).getTime() / 1000,
+                        value: m.value
+                    }
+                    obj.measurements.push(entry)
+                })
+                 return res.status(200).send(obj)
+            }
         }
     } catch (e) {
         res.status(500).send(e.message)
