@@ -100,21 +100,11 @@ const mnSchema = new mongoose.Schema({
 
 mnSchema.index({description: 1, owner: 1}, {unique: true});
 
-mnSchema.pre('deleteMany', async function (next) {
-    try {
-        Measurement.deleteMany({owner: this._id})
-    } catch (e) {
-        console.log(e.message)
-    }
-    next()
-})
-
 mnSchema.virtual('measurements', {
     ref: 'Measurement',
     localField: '_id',
     foreignField: 'owner'
 })
-
 
 const Microneedle = mongoose.model('Microneedle', mnSchema)
 

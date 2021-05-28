@@ -60,10 +60,50 @@ router.get(endPoint + '/:id', async (req, res) => {
     try {
         const microNeedle = await Microneedle.findById(req.params.id)
 
+        const agg = await Measurement.aggregate([
+            { "$match": { owner: microNeedle._id } },
+            { "$sort": {time: - 1}},
+            {
+                "$project": {
+                    "_id": "$_id",
+                    "value": "$value",
+                    "time" : {
+                        $dateFromString: {
+                            dateString: {
+                                $dateToString: {
+                                    date: {
+                                        $toDate: {
+                                            $multiply: ["$time", 1000]
+                                        }
+                                        }, format: "%Y-%m-%dT%H:%M"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: "$time",
+                    value: { $first:"$value"}
+                }
+            },
+            { "$sort": {"_id": -1}},
+            {"$limit": 600}
+        ])
+
+        console.log(agg)
+
         if (!microNeedle) {
             res.status(404).send('Microneedle could not be found by id: '+ req.params.id)
         } else {
-            await microNeedle.populate('measurements').execPopulate()
+            await microNeedle.populate({
+                path: 'measurements',
+                options: {
+                    sort : { time: -1 },
+                  //  limit: 600,
+                }
+            }).execPopulate()
             const obj = microNeedle.toObject()
             obj.measurements = microNeedle.measurements
             res.status(200).send(obj)
@@ -80,6 +120,7 @@ router.delete( endPoint + '/:id', async (req,res) => {
         if(!deletedMicroNeedle) {
             res.status(404).send('Microneedle could not be found by id: '+ req.params.id)
         } else {
+            await Measurement.deleteMany({owner: deletedMicroNeedle._id})
             res.status(200).send(deletedMicroNeedle)
         }
     } catch (e) {

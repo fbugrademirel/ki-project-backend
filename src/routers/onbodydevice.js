@@ -51,7 +51,11 @@ router.get(endPoint + '/allmicroneedles/:id', auth, async (req, res) => {
             path: 'microneedles',
             populate: {
                 path: 'measurements',
-                model: 'Measurement'
+                model: 'Measurement',
+                options: {
+                    limit: 600,
+                    sort : { time: -1 },
+                }
             }
         }).execPopulate()
 
@@ -148,7 +152,10 @@ router.delete(endPoint + '/:id', auth, async (req, res) => {
         if (!deletedDevice) {
             res.status(404).send('Device is not found by id: ' + req.params.id)
         } else {
-            await Microneedle.deleteMany({owner: deletedDevice._id})
+            const deleted = await Microneedle.deleteMany({ owner: deletedDevice._id })
+            for (const mns of deleted) {
+                await Measurement.deleteMany( { owner: mns._id })
+            }
             res.status(200).send(deletedDevice)
         }
     } catch (e) {
