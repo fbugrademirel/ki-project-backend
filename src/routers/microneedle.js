@@ -67,20 +67,13 @@ router.get(endPoint + '/:id', async (req, res) => {
                     path: 'measurements',
                     options: {
                         sort : { time: -1 },
+                        select: 'time value -owner -_id',
                         limit: 600,
                     }
                 }).execPopulate()
+
                 const obj = microNeedle.toObject()
-
                 obj.measurements = microNeedle.measurements
-
-                obj.measurements.forEach( m => {
-                    m._id = undefined
-                    m.owner = undefined
-                    m.__v = undefined
-                    m.createdAt = undefined
-                    m.updatedAt = undefined
-                })
                 return res.status(200).send(obj)
 
             } else if (req.query.interval === 'minutes') {

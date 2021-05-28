@@ -52,10 +52,12 @@ router.get(endPoint + '/allmicroneedles/:id', auth, async (req, res) => {
             populate: {
                 path: 'measurements',
                 model: 'Measurement',
+                select: 'time value -owner -_id',
                 options: {
                     limit: 600,
                     sort : { time: -1 },
-                }
+                },
+
             }
         }).execPopulate()
 
