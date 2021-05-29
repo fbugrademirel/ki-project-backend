@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const AnalyteNamingList = require('./analyte-naming-list')
+const Measurement = require('./measurement')
 const fs = require('fs')
 
 //This file read can be changed to a cloud bucket in later implementations
@@ -93,33 +94,17 @@ const mnSchema = new mongoose.Schema({
         ref: 'OnBodyDevice'
     },
 
-    measurements: [
-        {
-            time: {
-                type: String,
-                required: true
-            },
-            value: {
-                type: Number,
-                required: true
-            }
-        }]
 }, {
     timestamps: true
 })
 
 mnSchema.index({description: 1, owner: 1}, {unique: true});
 
-/**
- * delete the password and tokens field from the object to send back public data
- * @returns {*}
- */
-mnSchema.methods.getWithoutMeasurements = function () {
-    const mnObj = this.toObject()
-    delete mnObj.measurements
-    return mnObj
-}
-
+mnSchema.virtual('measurements', {
+    ref: 'Measurement',
+    localField: '_id',
+    foreignField: 'owner'
+})
 
 const Microneedle = mongoose.model('Microneedle', mnSchema)
 

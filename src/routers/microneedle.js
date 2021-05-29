@@ -1,6 +1,7 @@
 const express = require('express')
 const router = new express.Router('/analyte')
 const Microneedle = require('../models/microneedle')
+const Measurement = require('../models/measurement')
 const verifyOwner = require('../middleware/verify')
 const endPoint = '/microneedle'
 
@@ -18,7 +19,7 @@ router.post(endPoint, verifyOwner, async (req, res) => {
 
 router.patch(endPoint + '/:id', async (req, res) => {
 
-    const allowedOperations = ['measurements', 'calibrationParameters']
+    const allowedOperations = ['calibrationParameters']
     const updates = Object.keys(req.body)
     const isValidOperation = updates.every((key) => allowedOperations.includes(key))
 
@@ -33,14 +34,12 @@ router.patch(endPoint + '/:id', async (req, res) => {
             return res.status(404).send('Microneedle could not be found by id: '+ req.params.id)
         }
 
-        if(updates.includes('measurements')) {
-            microNeedle.measurements = microNeedle.measurements.concat(req.body['measurements'])
-        }
         if(updates.includes('calibrationParameters')) {
             microNeedle.calibrationParameters = req.body['calibrationParameters']
         }
+
         await microNeedle.save()
-        res.status(200).send(microNeedle.getWithoutMeasurements())
+        res.status(200).send(microNeedle)
 
     } catch (e) {
         res.status(500).send(e.message)
@@ -57,14 +56,74 @@ router.get(endPoint + '/all', async (req, res) => {
 })
 
 router.get(endPoint + '/:id', async (req, res) => {
-
     try {
         const microNeedle = await Microneedle.findById(req.params.id)
 
         if (!microNeedle) {
             res.status(404).send('Microneedle could not be found by id: '+ req.params.id)
         } else {
-            res.status(200).send(microNeedle)
+            if (req.query.interval === 'seconds' || req.query.interval === undefined) {
+                await microNeedle.populate({
+                    path: 'measurements',
+                    options: {
+                        sort : { time: -1 },
+                        select: 'time value -owner -_id',
+                        limit: 600,
+                    }
+                }).execPopulate()
+
+                const obj = microNeedle.toObject()
+                obj.measurements = microNeedle.measurements
+                return res.status(200).send(obj)
+
+            } else if (req.query.interval === 'minutes') {
+                const agg = await Measurement.aggregate([
+                    {
+                        $match: { owner: microNeedle._id }
+                    },
+                    {
+                        $sort: {time: - 1}
+                    },
+                    {
+                        $project: {
+                            _id: "$_id",
+                            value: "$value",
+                            time : {
+                                $dateFromString: {
+                                    dateString: {
+                                        $dateToString: {
+                                            date: {
+                                                $toDate: {
+                                                    $multiply: ["$time", 1000]
+                                                }
+                                            }, format: "%Y-%m-%dT%H:%M"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: "$time",
+                            value: { $first:"$value"}
+                        }
+                    },
+                    { "$sort": {"_id": -1}},
+                    {"$limit": 600}
+                ])
+
+                const obj = microNeedle.toObject()
+                obj.measurements = []
+                agg.forEach(m => {
+                    const entry = {
+                        time: new Date(m._id).getTime() / 1000,
+                        value: m.value
+                    }
+                    obj.measurements.push(entry)
+                })
+                 return res.status(200).send(obj)
+            }
         }
     } catch (e) {
         res.status(500).send(e.message)
@@ -78,6 +137,7 @@ router.delete( endPoint + '/:id', async (req,res) => {
         if(!deletedMicroNeedle) {
             res.status(404).send('Microneedle could not be found by id: '+ req.params.id)
         } else {
+            await Measurement.deleteMany({owner: deletedMicroNeedle._id})
             res.status(200).send(deletedMicroNeedle)
         }
     } catch (e) {
