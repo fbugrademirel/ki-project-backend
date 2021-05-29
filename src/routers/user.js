@@ -2,9 +2,7 @@ const express = require('express')
 const router = new express.Router()
 const User = require('../models/user')
 const auth = require('../middleware/auth')
-const ActivationCode = require('../models/activation')
-const jwt = require('jsonwebtoken')
-const nodemailer = require('nodemailer')
+const {sendEmailVerificationEmail} = require("../utils/mailer");
 
 
 // Only sign-up and login route will be publicly available and WILL NOT require authentication
@@ -22,31 +20,14 @@ router.post('/user', async (req, res) => {
     const user = new User(req.body)
     try {
         await user.save()
-        const token = await user.generateAuthorizationToken()
-
-        const secretCode = jwt.sign({_id:user._id.toString()}, 'auth',{expiresIn: '5 minutes'})
-        const activationCode = new ActivationCode({email: req.body.email, code: secretCode})
-        await activationCode.save()
-
-        const smtpTransport = nodemailer.createTransport({ service: 'Gmail',
-            auth: { user: 'ki.kth.project@gmail.com',
-                pass: 'Oaprnwi75.' }});
-
-        const mailOptions = { from: 'no-reply@example.com',
-            to: user.email, subject: 'Account Verification Link',
-            text: 'Hello '+ req.body.email +',\n\n'
-                + 'Please verify your account by clicking the link: \nhttp:\/\/' +
-                req.headers.host + '\/verification\/'
-                + user.email
-                + '\/' + activationCode.code
-                + '\n\nThank you!\n' };
-        await smtpTransport.sendMail(mailOptions)
-
-        res.status(201).send({user: user.getPublicData(), token})
+        // Create activation code and send it to the email
+        await sendEmailVerificationEmail(req, user)
+        res.status(201).send('An activation link is sent to your email. Please check your mailbox!')
     } catch (e) {
         res.status(400).send(e.message)
     }
 })
+
 
 /**
 LOGIN
