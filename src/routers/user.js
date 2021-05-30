@@ -22,7 +22,7 @@ router.post('/user', async (req, res) => {
         await user.save()
         // Create activation code and send it to the email
         await sendEmailVerificationEmail(req, user)
-        res.status(201).send('An activation link is sent to your email. Please check your mailbox!')
+        res.status(201).send(user.getPublicData())
     } catch (e) {
         res.status(400).send(e.message)
     }

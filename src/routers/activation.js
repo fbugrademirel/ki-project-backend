@@ -53,7 +53,7 @@ router.get('/activation/:email/:code', async (req, res) => {
 
     } catch (e) {
         await ActivationToken.deleteOne({code: req.params.code})
-        res.status(500).send(e.message + "Your activation code might be expired. Request another one!")
+        res.status(500).send(e.message + " Your activation code might be expired. Request another one!")
     }
 })
 

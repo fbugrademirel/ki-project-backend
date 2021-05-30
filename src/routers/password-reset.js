@@ -36,7 +36,6 @@ router.post('/password-reset/:email/:token', async (req,res) => {
         if (!user) {
             return res.status(401).send('No user has been found. Please sign up!')
         }
-        console.log(user.email)
         user.password = req.body.password
         await user.save()
         await token.delete()
