@@ -16,6 +16,6 @@ const activationCodeSchema = new mongoose.Schema({
     timestamps: true
 })
 
-const ActivationCode = mongoose.model('activationCode', activationCodeSchema)
+const ActivationToken = mongoose.model('activation-token', activationCodeSchema)
 
-module.exports = ActivationCode
+module.exports = ActivationToken

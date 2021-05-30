@@ -1,6 +1,6 @@
 const express = require('express')
 const router = new express.Router()
-const ActivationCode = require('../models/activation')
+const ActivationToken = require('../models/activation')
 const User = require('../models/user')
 const jwt = require('jsonwebtoken')
 const {sendEmailVerificationEmail} = require("../utils/mailer");
@@ -17,9 +17,10 @@ router.get('/activation/request/:email', async (req,res) => {
             return res.status(200).send('User is already verified! Please log in!')
         }
 
-        await ActivationCode.deleteOne({email: req.params.email})
+        await ActivationToken.deleteMany({email: req.params.email})
+
         await sendEmailVerificationEmail(req, user)
-        res.status(200).send('Verification e-mail is sent to your address. Please check your mailbox!')
+        res.status(200).send('Activation e-mail is sent to your address. Please check your mailbox!')
     } catch (e) {
         res.status(500).send(e.message)
     }
@@ -28,7 +29,7 @@ router.get('/activation/request/:email', async (req,res) => {
 // Activate account route
 router.get('/activation/:email/:code', async (req, res) => {
     try {
-        const activationCode = await ActivationCode.findOne({code: req.params.code})
+        const activationCode = await ActivationToken.findOne({code: req.params.code})
 
         if(!activationCode) {
             return res.status(400).send('No activation code is found. Please request another one!')
@@ -47,11 +48,11 @@ router.get('/activation/:email/:code', async (req, res) => {
 
         user.isVerified = true
         await user.save()
-        await ActivationCode.deleteOne({code: req.params.code})
+        await ActivationToken.deleteOne({code: req.params.code})
         res.status(201).send('Account successfully verified! Please log in!')
 
     } catch (e) {
-        await ActivationCode.deleteOne({code: req.params.code})
+        await ActivationToken.deleteOne({code: req.params.code})
         res.status(500).send(e.message + "Your activation code might be expired. Request another one!")
     }
 })
