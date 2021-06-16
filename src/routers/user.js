@@ -2,6 +2,8 @@ const express = require('express')
 const router = new express.Router()
 const User = require('../models/user')
 const auth = require('../middleware/auth')
+const {sendEmailVerificationEmail} = require("../utils/mailer");
+
 
 // Only sign-up and login route will be publicly available and WILL NOT require authentication
 // Log in get the token and then operate
@@ -18,12 +20,14 @@ router.post('/user', async (req, res) => {
     const user = new User(req.body)
     try {
         await user.save()
-        const token = await user.generateAuthorizationToken()
-        res.status(201).send({user: user.getPublicData(), token})
+        // Create activation code and send it to the email
+        await sendEmailVerificationEmail(req, user)
+        res.status(201).send(user.getPublicData())
     } catch (e) {
         res.status(400).send(e.message)
     }
 })
+
 
 /**
 LOGIN
@@ -31,6 +35,9 @@ LOGIN
 router.post('/user/login', async (req, res) => {
     try {
         const user = await User.findByLoginInfo(req.body.email, req.body.password)
+        if(!user.isVerified) {
+            return res.status(401).send('User is not verified! Please use the activation link to verify the user!')
+        }
         const token = await user.generateAuthorizationToken()
         res.status(200).send({user: user.getPublicData(), token})
     } catch (e) {

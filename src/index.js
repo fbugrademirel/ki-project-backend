@@ -8,6 +8,8 @@ const onBodyDeviceRouter = require('./routers/onbodydevice')
 const userRouter = require('./routers/user')
 const analyteListRouter = require('./routers/analyte-naming-list')
 const measurementRouter = require('./routers/measurement')
+const activationRouter = require('./routers/activation')
+const passwordResetRouter = require('./routers/password-reset')
 
 // Initialize the server
 const app = express()
@@ -18,6 +20,9 @@ app.use(onBodyDeviceRouter)
 app.use(userRouter)
 app.use(analyteListRouter)
 app.use(measurementRouter)
+app.use(activationRouter)
+app.use(passwordResetRouter)
+
 
 const port = process.env.PORT || 3000
 
