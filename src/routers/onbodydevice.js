@@ -145,7 +145,7 @@ router.get(endPoint + '/onlyallmicroneedles/:id', auth, async (req, res) => {
             return res.status(404).send('No device is found by provided id: ' + req.params.id )
         }
 
-        device.populate('microneedles').execPopulate()
+        await device.populate('microneedles').execPopulate()
         res.status(200).send(device.microneedles)
     } catch (e) {
         res.status(500).send(e.message)

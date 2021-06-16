@@ -15,7 +15,7 @@ router.post('/password-reset/:email',async (req, res) => {
         await PasswordResetToken.deleteMany({ email: req.params.email })
         await sendPasswordResetEmail(req, user)
 
-        res.status(200).send('A password reset link is sent to your e-mail address. Please check your mailbox!')
+        res.status(200).send({"message": "A password reset link is sent to your e-mail address. Please check your mailbox!"})
     } catch (e) {
         res.status(500).send(e.message)
     }
@@ -39,7 +39,7 @@ router.post('/password-reset/:email/:token', async (req,res) => {
         user.password = req.body.password
         await user.save()
         await token.delete()
-        res.status(201).send('Password changed successfully!')
+        res.status(201).send({"message":"Password changed successfully!"})
     } catch (e) {
         res.status(500).send(e.message)
     }
